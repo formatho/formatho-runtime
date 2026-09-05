@@ -1,0 +1,43 @@
+name: Deploy hosted tier (Droplet)
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Validate secrets
+        run: |
+          [ -n "${{ secrets.DO_HOST }}" ]     || { echo "::error::DO_HOST not set"; exit 1; }
+          [ -n "${{ secrets.DO_USERNAME }}" ] || { echo "::error::DO_USERNAME not set"; exit 1; }
+          [ -n "${{ secrets.DO_SSH_KEY }}" ]  || { echo "::error::DO_SSH_KEY not set"; exit 1; }
+
+      - name: Pull image and roll the hosted tier
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            set -e
+            mkdir -p /opt/formatho/runtime && cd /opt/formatho/runtime
+            if [ ! -f docker-compose.public.yml ]; then
+              curl -fsSL -o docker-compose.public.yml \
+                https://raw.githubusercontent.com/formatho/formatho-runtime/main/docker-compose.public.yml
+            fi
+            docker pull formatho/formatho-runtime:latest
+            docker compose -f docker-compose.public.yml up -d --remove-orphans
+            sleep 3
+            docker ps --filter name=runtime --format '{{.Names}} {{.Status}}'
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 6); do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.DO_HOST }}:8787/.well-known/mcp-server.json || echo 000)
+            [ "$CODE" = "200" ] && { echo "hosted tier healthy"; exit 0; } || sleep 5
+          done
+          echo "::error::health check failed"; exit 1

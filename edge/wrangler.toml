@@ -1,0 +1,14 @@
+name = "mcp-formatho-gateway"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+# Route the mcp.formatho.com hostname through this Worker.
+# Requires the zone (formatho.com) in the deploying CF account and a proxied
+# DNS record for "mcp" (the record itself is created once in the dashboard/API).
+routes = [
+  { pattern = "mcp.formatho.com/*", zone_name = "formatho.com", custom_domain = true }
+]
+
+[analytics_engine_datasets]
+binding = "mcp_analytics"
+dataset = "formatho_mcp"
