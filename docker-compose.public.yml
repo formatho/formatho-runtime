@@ -1,0 +1,24 @@
+# Formatho Runtime — public hosted tier (mcp.formatho.com)
+# Anonymous access with strict rate limits; the upgrade path is self-hosting.
+services:
+  runtime:
+    image: formatho/formatho-runtime:latest
+    ports:
+      - "127.0.0.1:8788:8787"   # front proxy (mcp.formatho.com) talks to this
+    command: ["node", "dist/index.js", "--http"]
+    environment:
+      FORMATHO_AUDIT_LOG: /data/audit.jsonl
+      FORMATHO_ALLOW_ANONYMOUS: "true"
+      FORMATHO_ANON_BURST: "20"
+      FORMATHO_ANON_RPM: "30"
+      FORMATHO_KEY_BURST: "300"
+      FORMATHO_KEY_RPM: "300"
+    volumes:
+      - formatho-public-audit:/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits: { memory: 256M, cpus: "0.5" }
+
+volumes:
+  formatho-public-audit:

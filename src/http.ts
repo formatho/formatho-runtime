@@ -5,6 +5,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { registry, verifiedBadge } from './registry.js'
 import { AuditLog } from './audit.js'
 import { PolicyEngine } from './policy.js'
+import { TokenBucket } from './ratelimit.js'
 import { buildServer, executeTool, type SharedDeps } from './core.js'
 
 /**
@@ -23,12 +24,24 @@ export async function startHttpServer(opts: {
   audit: AuditLog
   policy: PolicyEngine
 }): Promise<Server> {
-  if (!opts.policy.hasKeys) {
+  if (!opts.policy.hasKeys && process.env.FORMATHO_ALLOW_ANONYMOUS !== 'true') {
     throw new Error(
       'HTTP mode is network-facing and requires API keys. Set FORMATHO_API_KEYS="key:agent-name,…" ' +
-        'or FORMATHO_KEYS_FILE=/path/keys.json, or run without --http for local stdio mode.'
+        'or FORMATHO_KEYS_FILE=/path/keys.json — or set FORMATHO_ALLOW_ANONYMOUS=true for a ' +
+        'rate-limited public instance (self-hosted private deployments should always use keys).'
     )
   }
+  const allowAnonymous = process.env.FORMATHO_ALLOW_ANONYMOUS === 'true'
+  const anonBucket = new TokenBucket(
+    Number(process.env.FORMATHO_ANON_BURST || 30),
+    Number(process.env.FORMATHO_ANON_RPM || 30)
+  )
+  const keyBucket = new TokenBucket(
+    Number(process.env.FORMATHO_KEY_BURST || 300),
+    Number(process.env.FORMATHO_KEY_RPM || 300)
+  )
+  const clientKey = (req: IncomingMessage): string =>
+    (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() || req.socket.remoteAddress || 'unknown'
 
   const deps: SharedDeps = { audit: opts.audit, policy: opts.policy }
 
@@ -68,6 +81,17 @@ export async function startHttpServer(opts: {
 
   const server = createServer(async (req, res) => {
     const url = new URL(req.url || '/', 'http://localhost')
+
+    // CORS for browser-based MCP clients (Claude.ai web, custom hosts)
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-ID')
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204)
+      res.end()
+      return
+    }
+
     try {
       // ---- /.well-known/mcp-server.json: public self-description (RFC-style
       // discovery). Metadata only — no tool access without a key. ----
@@ -83,11 +107,22 @@ export async function startHttpServer(opts: {
         })
       }
 
-      // ---- auth for everything else ----
+      // ---- auth: bearer key -> agent identity; or anonymous tier ----
       const agent = opts.policy.authenticate(req.headers.authorization)
-      if (!agent) {
+      const identity = agent ?? (allowAnonymous ? 'anonymous' : null)
+      if (!identity) {
         res.setHeader('WWW-Authenticate', 'Bearer')
         return json(res, 401, { error: 'missing or invalid API key' })
+      }
+
+      // ---- rate limiting: anonymous tier is tight, keyed agents generous ----
+      const isToolCall = !!url.pathname.match(/^\/api\/tools\//) || url.pathname === '/mcp'
+      if (isToolCall) {
+        const ok = agent ? keyBucket.take(agent) : anonBucket.take(clientKey(req))
+        if (!ok) {
+          res.setHeader('Retry-After', '10')
+          return json(res, 429, { error: 'rate limit exceeded — self-host for unlimited access' })
+        }
       }
 
       // ---- REST: registry listing ----
@@ -101,7 +136,7 @@ export async function startHttpServer(opts: {
             deterministic: t.deterministic,
             permissions: t.permissions,
             verified: verifiedBadge(t),
-            allowed: opts.policy.allows(agent, t.name)
+            allowed: opts.policy.allows(identity, t.name)
           }))
         })
       }
@@ -113,12 +148,12 @@ export async function startHttpServer(opts: {
         const tool = registry.find((t) => t.name === name)
         if (!tool) return json(res, 404, { error: `unknown tool: ${name}` })
 
-        const decision = opts.policy.decision(agent, name)
+        const decision = opts.policy.decision(identity, name)
         if (decision !== 'allow') {
           return json(res, 403, {
             error: decision === 'deny-not-listed'
-              ? `agent "${agent}" is not listed in the policy file`
-              : `agent "${agent}" is not allowed to call ${name}`,
+              ? `agent "${identity}" is not listed in the policy file`
+              : `agent "${identity}" is not allowed to call ${name}`,
             decision
           })
         }
@@ -130,7 +165,7 @@ export async function startHttpServer(opts: {
           return json(res, 400, { error: 'body must be JSON' })
         }
 
-        const result = await executeTool(tool, input, agent, deps)
+        const result = await executeTool(tool, input, identity, deps)
         if ('error' in result && result.error) return json(res, 422, result)
         return json(res, 200, result)
       }
