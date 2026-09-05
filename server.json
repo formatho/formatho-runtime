@@ -2,11 +2,11 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.formatho/runtime",
   "description": "Self-hosted MCP server: 26 deterministic dev, security, and EVM tools.",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "docker.io/formatho/formatho-runtime:0.2.5",
+      "identifier": "docker.io/formatho/formatho-runtime:0.2.6",
       "transport": {
         "type": "stdio"
       },
@@ -33,7 +33,7 @@
         },
         {
           "type": "positional",
-          "value": "docker.io/formatho/formatho-runtime:0.2.5"
+          "value": "docker.io/formatho/formatho-runtime:0.2.6"
         }
       ]
     }

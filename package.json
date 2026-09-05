@@ -1,6 +1,6 @@
 {
   "name": "@formatho/runtime",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Formatho Runtime \u2014 private, self-hosted MCP tool infrastructure for AI agents.",
   "type": "module",
   "bin": {

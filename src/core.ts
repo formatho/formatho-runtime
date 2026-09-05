@@ -16,7 +16,7 @@ export interface SharedDeps {
 }
 
 export function buildServer(): McpServer {
-  const version = '0.2.5'
+  const version = '0.2.6'
   const server = new McpServer(
     { name: 'formatho-runtime', version },
     {
