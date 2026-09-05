@@ -114,6 +114,32 @@ are denied everything. HTTP mode refuses to start without API keys.
 Docker Compose ships in `docker-compose.yml` (audit volume, localhost
 bind, policy mount).
 
+## Privacy commitments (self-hosted bundle)
+
+Privacy here is not a policy promise — it is absence of capability. Each claim
+below is machine-checkable against this repository and the published image:
+
+1. **No telemetry, no phone-home.** The runtime makes zero outbound requests.
+   No analytics, crash reporting, update checks, or registry pings exist in
+   the code — verify: `grep -r "fetch(\|https://" src/` returns nothing but
+   schemas and docs.
+2. **No install-time code execution.** None of the runtime's dependencies
+   ship `postinstall` scripts — the supply chain cannot execute on install.
+3. **Tools cannot exfiltrate.** Every tool is a pure function; the registry
+   refuses registration for any tool declaring network, filesystem, secret,
+   or subprocess access. There is no code path from a tool to the network.
+4. **Audit logs never contain payloads.** Metadata only (tool, version,
+   duration, byte sizes) — by construction in `src/core.ts`.
+5. **Three pinned dependencies** (MCP SDK, zod, noble hashes), all
+   source-available and reviewed. The image digest you pull is what runs.
+
+Inside your perimeter, what happens is governed by *your* network policy —
+the runtime simply gives it nothing to govern.
+
+The hosted tier (`mcp.formatho.com`, when live) is the explicit exception:
+payloads transit our server, which is exactly why it is labeled a
+rate-limited trial tier whose every 429 points to self-hosting.
+
 ## Security model
 
 - **Zero ambient capabilities.** Every tool declares
