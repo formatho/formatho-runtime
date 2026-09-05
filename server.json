@@ -1,38 +1,47 @@
 {
-  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/registry/main/docs/reference/server-json/draft/server.schema.json",
-  "name": "io.github.formatho.runtime",
-  "description": "Private, self-hosted MCP tool infrastructure for AI agents. Deterministic developer, security, and EVM tools (JSON, hashing, JWT decode, keccak, function selectors, CREATE2, storage slots, calldata decode, EIP-55, ERC-4626 math, Uniswap v4 permissions) with a permissioned tool registry, per-agent policy engine, and metadata-only audit logging. Tools are pure functions with zero network, filesystem, or secret access. Runs on-premise via Docker; your agents' payloads never leave your infrastructure.",
-  "status": "active",
-  "repository": {
-    "url": "https://github.com/formatho/formatho-runtime",
-    "source": "github"
-  },
-  "version": "0.2.2",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.formatho/runtime",
+  "description": "Self-hosted MCP server: 26 deterministic dev, security, and EVM tools.",
+  "version": "0.2.5",
   "packages": [
     {
-      "registry_type": "docker",
-      "identifier": "docker.io/formatho/formatho-runtime",
-      "version": "0.2.2",
-      "installation_hint": "docker run -i --rm -v formatho-audit:/data formatho/formatho-runtime:latest",
+      "registryType": "oci",
+      "identifier": "docker.io/formatho/formatho-runtime:0.2.5",
       "transport": {
-        "type": "stdio",
-        "command": "docker",
-        "args": ["run", "-i", "--rm", "-v", "formatho-audit:/data", "formatho/formatho-runtime"]
-      }
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "run"
+        },
+        {
+          "type": "positional",
+          "value": "-i"
+        },
+        {
+          "type": "positional",
+          "value": "--rm"
+        },
+        {
+          "type": "positional",
+          "value": "-v"
+        },
+        {
+          "type": "positional",
+          "value": "formatho-audit:/data"
+        },
+        {
+          "type": "positional",
+          "value": "docker.io/formatho/formatho-runtime:0.2.5"
+        }
+      ]
     }
   ],
-  "tools": [
-    { "name": "formatho.registry", "description": "Registry metadata with per-tool permissions and verification status" },
-    { "name": "json.format", "description": "Validate and pretty-print JSON" },
-    { "name": "base64.encode", "description": "Base64-encode text" },
-    { "name": "hash.text", "description": "md5/sha1/sha256/sha384/sha512 hashing" },
-    { "name": "jwt.decode", "description": "Decode JWT header and claims (no signature verification)" },
-    { "name": "evm.keccak256", "description": "Keccak-256 (Ethereum flavor)" },
-    { "name": "evm.function_selector", "description": "Signature to 4-byte selector with reverse lookup" },
-    { "name": "evm.create2_address", "description": "Deterministic CREATE2 address computation" },
-    { "name": "evm.storage_slot", "description": "Solidity storage slot computation (mappings, arrays)" },
-    { "name": "evm.decode_calldata", "description": "Selector match and static argument decode" },
-    { "name": "evm.v4_hook_permissions", "description": "Uniswap v4 hook permission bits encode/decode" },
-    { "name": "erc4626.math", "description": "Exact EIP-4626 vault share math" }
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.formatho.com/mcp"
+    }
   ]
 }

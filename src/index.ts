@@ -27,7 +27,7 @@ import './tools/evm.js'
 import './tools/defi.js'
 import './tools/extra.js'
 
-const version = '0.2.4'
+const version = '0.2.5'
 const httpMode = process.argv.includes('--http')
 const audit = new AuditLog(process.env.FORMATHO_AUDIT_LOG || 'formatho-audit.jsonl')
 

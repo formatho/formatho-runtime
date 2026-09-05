@@ -12,6 +12,9 @@ COPY src ./src
 RUN npm run build && npm prune --omit=dev
 
 FROM node:22-alpine
+LABEL io.modelcontextprotocol.server.name="com.formatho/runtime"
+LABEL io.modelcontextprotocol.server.description="Self-hosted MCP server: 26 deterministic dev, security, and EVM tools."
+LABEL io.modelcontextprotocol.server.version="0.2.4"
 WORKDIR /app
 ENV NODE_ENV=production
 ENV FORMATHO_AUDIT_LOG=/data/audit.jsonl
