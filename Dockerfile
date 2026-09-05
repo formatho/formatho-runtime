@@ -15,6 +15,7 @@ FROM node:22-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 ENV FORMATHO_AUDIT_LOG=/data/audit.jsonl
+ENV FORMATHO_HOST=0.0.0.0
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY package.json ./

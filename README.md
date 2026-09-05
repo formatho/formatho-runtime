@@ -63,7 +63,7 @@ Claude Desktop (`claude_desktop_config.json`):
 }
 ```
 
-## Tools (Phase 2 — 26)
+## Tools (Phase 2 — 25 + registry meta-tool)
 
 | Name | Category | What it does |
 | --- | --- | --- |

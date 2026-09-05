@@ -143,7 +143,10 @@ export async function startHttpServer(opts: {
     }
   })
 
-  await new Promise<void>((resolve) => server.listen(opts.port, opts.host ?? '127.0.0.1', resolve))
+  // bare-metal default: loopback. Containers set FORMATHO_HOST=0.0.0.0 so the
+  // host's port mapping can reach the server (host-side binding controls exposure).
+  const host = opts.host ?? process.env.FORMATHO_HOST ?? '127.0.0.1'
+  await new Promise<void>((resolve) => server.listen(opts.port, host, resolve))
   return server
 }
 

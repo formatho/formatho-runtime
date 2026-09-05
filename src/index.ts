@@ -27,14 +27,14 @@ import './tools/evm.js'
 import './tools/defi.js'
 import './tools/extra.js'
 
-const version = '0.2.0'
+const version = '0.2.1'
 const httpMode = process.argv.includes('--http')
 const audit = new AuditLog(process.env.FORMATHO_AUDIT_LOG || 'formatho-audit.jsonl')
 
 async function main() {
   if (httpMode) {
     const policy = new PolicyEngine()
-    const server = await startHttpServer({ port: Number(process.env.FORMATHO_PORT || 8787), audit, policy })
+    const server = await startHttpServer({ port: Number(process.env.FORMATHO_PORT || 8787), host: process.env.FORMATHO_HOST, audit, policy })
     const addr = server.address()
     const port = typeof addr === 'object' && addr ? addr.port : 0
     process.stderr.write(
