@@ -63,7 +63,7 @@ Claude Desktop (`claude_desktop_config.json`):
 }
 ```
 
-## Tools (Phase 1 — 20)
+## Tools (Phase 2 — 26)
 
 | Name | Category | What it does |
 | --- | --- | --- |
@@ -82,12 +82,39 @@ Claude Desktop (`claude_desktop_config.json`):
 | `evm.v4_hook_permissions` | web3 | Uniswap v4 hook permission bits |
 | `erc4626.math` | defi | Exact EIP-4626 share/asset conversion |
 | `timestamp.convert` | dev | Unix ↔ ISO 8601 |
+| `regex.test` | dev | Pattern match with capture groups |
+| `case.convert` | dev | camel/snake/kebab/constant/title |
+| `hex.encode` | data | Text ↔ hex |
+| `evm.checksum_address` | web3 | EIP-55 checksum (verify + compute) |
+| `evm.unit_convert` | web3 | wei ↔ gwei ↔ ether, exact BigInt |
 | `formatho.registry` | meta | Registry metadata + Formatho Verified status |
 
 Call `formatho.registry` from your agent to discover everything, including
 each tool's deterministic flag and verified status.
 
-## Security model (Phase 1)
+## REST + HTTP MCP gateway (Phase 2)
+
+```bash
+FORMATHO_API_KEYS="devkey-1:local-agent" node dist/index.js --http
+# GET  /api/tools          → registry with per-tool allowed flags for this agent
+# POST /api/tools/<name>   → execute (body = tool input JSON)
+# POST /mcp                → MCP Streamable HTTP for remote agents
+```
+
+```bash
+curl -H "Authorization: Bearer devkey-1" \
+     -d '{"signature":"transfer(address,uint256)"}' \
+     http://127.0.0.1:8787/api/tools/evm.function_selector
+# → { "signature": "transfer(address,uint256)", "selector": "0xa9059cbb" }
+```
+
+Per-agent policies (`policy.example.json`) restrict which tools each key
+may call — wildcards supported (`evm.*`). Unlisted agents in a policy file
+are denied everything. HTTP mode refuses to start without API keys.
+Docker Compose ships in `docker-compose.yml` (audit volume, localhost
+bind, policy mount).
+
+## Security model
 
 - **Zero ambient capabilities.** Every tool declares
   `network: false, filesystem: false, secrets: false, subprocess: false` —

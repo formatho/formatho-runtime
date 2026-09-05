@@ -1,0 +1,6 @@
+{
+  "agents": {
+    "blockchain-agent": { "allowedTools": ["evm.*", "erc4626.*"] },
+    "security-agent": { "allowedTools": ["jwt.decode", "hash.*", "base64.*"] }
+  }
+}

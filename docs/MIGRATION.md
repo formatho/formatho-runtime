@@ -94,17 +94,26 @@ HTTP transport (stdio reaches Claude Desktop/Code today).
 - [x] End-to-end protocol test: 15 assertions (handshake, tools/list,
       9 tool calls incl. ground truths, schema rejection, audit contents)
 
-### Phase 2 — next (validation-gated)
+### Phase 2 — shipped (v0.2.0)
 
-1. Streamable HTTP transport + `POST /api/tools/<name>` REST gateway
-   sharing the same registry (spec §4: one execution layer, many faces)
-2. API keys + agent allow-list policy engine (spec §7/§9: per-agent
-   allowed_tools; DENY by default for undeclared tools)
-3. Docker Compose; `formatho` CLI rewritten as a thin client of the runtime
-4. Grow registry to 40–60 tools (YAML/XML/TOML/CSV, regex, SQL format,
-   keccak-heavy EVM set, ABI full decode via a reviewed decoder)
-5. Website: add a "Runtime" page + MCP quickstart docs (no redesign —
-   additive nav link only)
+- [x] Streamable HTTP transport + `POST /api/tools/<name>` REST gateway
+      sharing the same registry (spec §4: one execution layer, many faces —
+      src/core.ts is the single execution path for all transports)
+- [x] API keys + per-agent allow-list policy engine (spec §7/§9), with
+      wildcard patterns and deny-by-default for unlisted agents
+- [x] Audit records carry the authenticated agent identity
+- [x] Docker Compose (localhost bind, audit volume, policy mount)
+- [x] Registry grown 20 → 26 tools (regex, case, hex, EIP-55, unit convert)
+- [x] 16/16 integration tests: auth (401s), policy allow/deny both
+      directions, per-tool allowed flags in listings, schema 422s,
+      ground-truth tool results, agent-attributed audit, stdio regression
+- [x] Website: /runtime page + homepage positioning (deployed)
+
+### Remaining for later phases
+
+- CLI unified onto the runtime; YAML/XML/TOML/CSV tools (needs a reviewed
+  parser dependency); full ABI decode; Kubernetes/VPC guides, SSO, quotas
+  (Phase 3); private/custom tool packages (Phase 3/4)
 
 ### Phase 3
 

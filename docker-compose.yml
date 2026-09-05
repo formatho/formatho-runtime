@@ -1,0 +1,19 @@
+# Formatho Runtime — HTTP gateway (REST + MCP Streamable HTTP)
+# Copy .env.example, set your keys, then: docker compose up
+services:
+  runtime:
+    image: formatho/formatho-runtime:latest
+    ports:
+      - "127.0.0.1:8787:8787"   # bind localhost by default; put behind your TLS terminator/proxy
+    command: ["node", "dist/index.js", "--http"]
+    environment:
+      FORMATHO_AUDIT_LOG: /data/audit.jsonl
+      FORMATHO_API_KEYS: ${FORMATHO_API_KEYS:?set FORMATHO_API_KEYS="key:agent-name,..." in .env}
+      FORMATHO_POLICY_FILE: /data/policy.json
+    volumes:
+      - formatho-audit:/data
+      # optional per-agent policy: mount ./policy.json to /data/policy.json
+    restart: unless-stopped
+
+volumes:
+  formatho-audit:
