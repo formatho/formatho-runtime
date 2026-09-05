@@ -98,7 +98,7 @@ export async function startHttpServer(opts: {
       if (req.method === 'GET' && url.pathname === '/.well-known/mcp-server.json') {
         return json(res, 200, {
           name: 'io.github.formatho.runtime',
-          version: '0.2.2',
+          version: '0.2.6',
           description: 'Self-hosted MCP tool infrastructure for AI agents — deterministic developer, security, and EVM tools with per-agent permissions and metadata-only audit.',
           repository: 'https://github.com/formatho/formatho-runtime',
           transport: { type: 'http', endpoint: '/mcp', auth: 'bearer' },
