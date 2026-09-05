@@ -47,7 +47,7 @@ docker run -i --rm \
 ```bash
 claude mcp add formatho -- node /path/to/formatho-runtime/dist/index.js
 # or via Docker:
-claude mcp add formatho -- docker run -i --rm -v formatho-audit:/data formatho-runtime
+claude mcp add formatho -- docker run -i --rm -v formatho-audit:/data formatho/formatho-runtime
 ```
 
 Claude Desktop (`claude_desktop_config.json`):
@@ -57,7 +57,7 @@ Claude Desktop (`claude_desktop_config.json`):
   "mcpServers": {
     "formatho": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "-v", "formatho-audit:/data", "formatho-runtime"]
+      "args": ["run", "-i", "--rm", "-v", "formatho-audit:/data", "formatho/formatho-runtime"]
     }
   }
 }
