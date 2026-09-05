@@ -69,7 +69,21 @@ export async function startHttpServer(opts: {
   const server = createServer(async (req, res) => {
     const url = new URL(req.url || '/', 'http://localhost')
     try {
-      // ---- auth for everything ----
+      // ---- /.well-known/mcp-server.json: public self-description (RFC-style
+      // discovery). Metadata only — no tool access without a key. ----
+      if (req.method === 'GET' && url.pathname === '/.well-known/mcp-server.json') {
+        return json(res, 200, {
+          name: 'io.github.formatho.runtime',
+          version: '0.2.2',
+          description: 'Self-hosted MCP tool infrastructure for AI agents — deterministic developer, security, and EVM tools with per-agent permissions and metadata-only audit.',
+          repository: 'https://github.com/formatho/formatho-runtime',
+          transport: { type: 'http', endpoint: '/mcp', auth: 'bearer' },
+          toolsEndpoint: '/api/tools',
+          registryMetaTool: 'formatho.registry'
+        })
+      }
+
+      // ---- auth for everything else ----
       const agent = opts.policy.authenticate(req.headers.authorization)
       if (!agent) {
         res.setHeader('WWW-Authenticate', 'Bearer')
