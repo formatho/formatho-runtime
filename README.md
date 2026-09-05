@@ -28,7 +28,7 @@ property of the architecture, not a promise.
 ### Direct (Node ≥ 20)
 
 ```bash
-git clone https://github.com/Ritavidhata/formatho-runtime && cd formatho-runtime
+git clone https://github.com/formatho/formatho-runtime && cd formatho-runtime
 npm install && npm run build
 node dist/index.js        # stdio MCP server
 ```
