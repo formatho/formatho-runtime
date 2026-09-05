@@ -15,7 +15,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { registry, verifiedBadge, type AuditRecord } from './registry.js'
 import { AuditLog } from './audit.js'
-const version = '0.1.0'
+const version = '0.1.1'
 
 // tool modules self-register on import
 import './tools/data.js'
