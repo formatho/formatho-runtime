@@ -1,0 +1,4 @@
+node_modules
+dist
+*.jsonl
+.git
