@@ -48,9 +48,9 @@ export async function startHttpServer(opts: {
   // one MCP server instance per /mcp session transport
   const createMcpInstance = (): { server: McpServer; transport: StreamableHTTPServerTransport } => {
     const server = buildServer()
+    // stateless: one server+transport per request; our tools carry no state
     const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: () => randomUUID(),
-      // keys live in the gateway policy layer; sessions don't add auth
+      sessionIdGenerator: undefined,
       enableJsonResponse: false
     })
     return { server, transport }
@@ -170,19 +170,17 @@ export async function startHttpServer(opts: {
         return json(res, 200, result)
       }
 
-      // ---- MCP Streamable HTTP ----
+      // ---- MCP Streamable HTTP (stateless pattern) ----
       if (url.pathname === '/mcp') {
         const { server: mcp, transport } = createMcpInstance()
+        // SDK pattern: connect the server BEFORE handling the request, or
+        // initialize responses never attach to the stream (keepalives only)
+        await mcp.connect(transport)
         res.on('close', () => {
           void mcp.close()
           void transport.close()
         })
-        // note: tool-level policy inside MCP sessions uses the authenticated
-        // agent identity via a session->agent map on the transport; for the
-        // REST-first Phase 2 the MCP endpoint enforces key auth and full
-        // registry access per policy at the HTTP layer.
         await transport.handleRequest(req, res)
-        void mcp.connect(transport)
         return
       }
 
