@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build image
         run: docker build -t formatho-runtime .
-      - name: Smoke: server starts and registers tools
+      - name: Smoke test server startup
         run: |
           echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' | \
           docker run -i --rm formatho-runtime 2>stderr.log | grep -q '"serverInfo"'
