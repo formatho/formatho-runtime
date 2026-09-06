@@ -78,3 +78,8 @@ export function verifiedBadge(def: ToolDefinition): Record<string, boolean> {
     ...def.verified
   }
 }
+
+/** Late-bound registry access for meta-tools (avoids circular imports). */
+export function getRegistry(): ToolDefinition[] {
+  return registry
+}

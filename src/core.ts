@@ -1,5 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { registry, verifiedBadge, type ToolDefinition, type AuditRecord } from './registry.js'
+import { registry, register, verifiedBadge, type ToolDefinition, type AuditRecord } from './registry.js'
 import { AuditLog } from './audit.js'
 import { PolicyEngine } from './policy.js'
 
@@ -16,7 +16,7 @@ export interface SharedDeps {
 }
 
 export function buildServer(): McpServer {
-  const version = '0.2.6'
+  const version = '0.3.0'
   const server = new McpServer(
     { name: 'formatho-runtime', version },
     {
@@ -43,33 +43,6 @@ export function buildServer(): McpServer {
     )
   }
 
-  registerDynamic(
-    'formatho.registry',
-    {
-      title: 'formatho.registry',
-      description: 'List every registered Formatho tool with version, category, deterministic flag, and Formatho Verified status.',
-      inputSchema: {}
-    },
-    async () => ({
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify(
-            registry.map((t) => ({
-              name: t.name,
-              version: t.version,
-              category: t.category,
-              deterministic: t.deterministic,
-              permissions: t.permissions,
-              verified: verifiedBadge(t)
-            })),
-            null,
-            2
-          )
-        }
-      ]
-    })
-  )
   return server
 }
 

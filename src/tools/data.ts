@@ -56,7 +56,9 @@ register({
       JSON.parse(json)
       return { valid: true }
     } catch (e: any) {
-      return { valid: false, error: String(e?.message || e) }
+      // parseError (not "error") so the execution wrapper treats this as a
+      // successful validation result, not a tool failure
+      return { valid: false, parseError: String(e?.message || e) }
     }
   }
 })

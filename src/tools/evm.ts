@@ -37,6 +37,12 @@ register({
   deterministic: true,
   verified: V,
   execute: ({ data, encoding }) => {
+    if (encoding === 'hex') {
+      const clean = data.replace(/^0x/, '')
+      if (!/^[0-9a-fA-F]*$/.test(clean) || clean.length % 2 !== 0) {
+        throw new Error('invalid hex string: expected 0x-prefixed, even-length hex characters')
+      }
+    }
     const bytes = encoding === 'hex' ? Buffer.from(data.replace(/^0x/, ''), 'hex') : Buffer.from(data, 'utf8')
     return { hash: keccakHex(bytes) }
   }

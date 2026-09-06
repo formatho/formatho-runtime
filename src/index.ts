@@ -26,8 +26,9 @@ import './tools/security.js'
 import './tools/evm.js'
 import './tools/defi.js'
 import './tools/extra.js'
+import './tools/meta.js'
 
-const version = '0.2.6'
+const version = '0.3.0'
 const httpMode = process.argv.includes('--http')
 const audit = new AuditLog(process.env.FORMATHO_AUDIT_LOG || 'formatho-audit.jsonl')
 
