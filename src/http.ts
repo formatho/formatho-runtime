@@ -93,6 +93,37 @@ export async function startHttpServer(opts: {
     }
 
     try {
+      // ---- /auth.md: agent registration discovery (always public) ----
+      if (req.method === 'GET' && url.pathname === '/auth.md') {
+        const md = `# auth.md
+
+Formatho Runtime — Agent Authentication
+
+## Server
+- MCP: \`${origin}/mcp\` (Streamable HTTP)
+- REST: \`${origin}/api/tools\`
+
+## Methods
+
+### API Key (Bearer)
+Authorization: Bearer <key>
+
+Keys map to named agent identities with per-tool policy scope.
+Provision via FORMATHO_API_KEYS env var (self-hosted) or contact
+support@formatho.com (hosted tier).
+
+### Anonymous (rate-limited)
+No credential required. ${process.env.FORMATHO_ALLOW_ANONYMOUS === 'true' ? 'Available on this instance.' : 'Not enabled on this instance.'}
+
+## Details
+https://formatho.com/auth.md
+`
+        const payload = md
+        res.writeHead(200, { 'Content-Type': 'text/markdown; charset=utf-8' })
+        res.end(payload)
+        return
+      }
+
       // ---- /.well-known/mcp-server.json: public self-description (RFC-style
       // discovery). Metadata only — no tool access without a key. ----
       if (req.method === 'GET' && url.pathname === '/.well-known/mcp-server.json') {
